@@ -40,6 +40,8 @@ Scale::Scale (int root) {
   array_rotate((this->sc), 12, root%12);
 }
 
+
+// todo: up() and down() only look up to a whole step away, which is fine for church modes, but not for general scales
 int Scale::up(int n) {
   Logger::log(LOGGER, "(up) note %d in scale? %s", n, this->sc[n%12] ? "true" : "false");
   if (this->sc[(n+1)%12]) {
@@ -58,6 +60,22 @@ int Scale::down(int n) {
   }  
 }
 
+// todo: rename? has(), contains()
 bool Scale::in(int n) {
   return this->sc[n%12];
+}
+
+// todo: this assumes repeating octave scales. stop that.
+// todo: what about under/overflow?
+byte Scale::nearest(byte n) {
+  int i;
+
+  if (in(n)) return n; // the trivial case
+  
+  for (i=0; i<6; i++) {
+    if (in(n+i))
+      return n+i;
+    if (in(n-i))
+      return n-i;
+  }
 }

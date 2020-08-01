@@ -8,7 +8,7 @@
 // todo: midi note number format specifier
 // todo: interpret scientific pitch notation for key
 
-const char* SerialCommandNames[5] = { "on", "off", "?", "key", "dev" };
+const char* SerialCommandNames[SerialCommandsMax+1] = { "on", "off", "key", "dev", "ton", "bpm", "?" };
 
 SerialConsole::SerialConsole() {
 }
@@ -23,7 +23,7 @@ void SerialConsole::write(const char *message, ...) {
 
   Serial.write("[Console] ");
   Serial.write(this->msgbuf);
-  //Serial.write("\n"); // separate writeLine function
+  //Serial.write("\n"); // todo: separate writeLine function
 }
 
 void SerialConsole::run_command(char *cmd, int value) {
@@ -31,7 +31,7 @@ void SerialConsole::run_command(char *cmd, int value) {
   // todo: strncmp?
 
   int i;
-  for (i=0; i< SerialCommands::SerialCommandsMax; i++) {
+  for (i=0; i <= SerialCommands::SerialCommandsMax; i++) {
     if (strcmp(cmd, SerialCommandNames[i]) == 0) {
       this->write("Received command '%s'\n", cmd);
       switch ((SerialCommands)i) {
@@ -53,9 +53,6 @@ void SerialConsole::run_command(char *cmd, int value) {
             this->write("Not running.\n");
           }
           break;
-        case Help:
-          this->write("Usage: [[dev|key] INT] | [on|off|?]\n");
-          break;
         case Key:
           if (value < 0 || value > 127) {
             this->write("Key out of range: %d\n", value);
@@ -65,10 +62,31 @@ void SerialConsole::run_command(char *cmd, int value) {
             this->write("Key updated: %d\n", value);
           }
           break;
-        case Dev:
+        case Deviation:
           GLOBAL_PARAMS.deviation = value;
           GLOBAL_PARAMS.dirty = true;
           this->write("Deviation updated: %d\n", value);
+          break;
+        case Tonality:
+          if (value < 0 || value > 100) {
+            this->write("Tonality must be between 0 and 100.\n");
+          } else {
+            GLOBAL_PARAMS.tonality = (double)value / 100.0;
+            GLOBAL_PARAMS.dirty = true;
+            this->write("Tonality updated: %d\n", value);
+          }
+          break;
+        case BPM:
+          if (value < 0) {
+            this->write("BPM must be > 0.\n");
+          } else {
+            GLOBAL_PARAMS.bpm = value;
+            GLOBAL_PARAMS.dirty = true;
+            this->write("BPM updated: %d\n", value);
+          }
+          break;
+        case Help:
+          this->write("Usage: [[dev|key] INT] | [on|off|?|ton]\n");
           break;
         default:
           this->write("Unknown command: '%s'\n", cmd);
@@ -76,30 +94,6 @@ void SerialConsole::run_command(char *cmd, int value) {
        }
      }
    }
-
-/*
-  if (strcmp(cmd, "dev") == 0) {
-    GLOBAL_PARAMS.deviation = value;
-    GLOBAL_PARAMS.dirty = true;
-    this->write("Deviation updated: %d\n", value);
-  } else if (strcmp(cmd, "key") == 0) {
-    if (value < 0 || value > 127) {
-      this->write("Key out of range: %d\n", value);
-    } else {
-      GLOBAL_PARAMS.center = value;
-      GLOBAL_PARAMS.dirty = true;
-      this->write("Key updated: %d\n", value);
-    }
-  } else if (strcmp(cmd, "on") == 0) {
-    return;
-  } else if (strcmp(cmd, "off") == 0) {
-    return;
-  } else if (strcmp(cmd, "?") == 0) {
-    this->write("Usage: [[dev|key] INT] | [on|off|?]\n");
-  } else {
-    this->write("Unknown command: '%s'\n", cmd);
-  }
-*/
 }
 
 void SerialConsole::process_commands() {

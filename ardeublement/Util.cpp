@@ -44,3 +44,7 @@ int Gaussian::gaussint(int lo, int hi) {
   int s = (hi - lo) / 2;
   return round(gaussrand() * s + x);
 }
+
+bool Uniform::random_bool(double p) {
+  return (double)random() / RANDOM_MAX < p;
+}

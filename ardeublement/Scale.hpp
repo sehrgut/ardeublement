@@ -15,6 +15,7 @@ class Scale {
     int up(int n);
     int down(int n);
     bool in(int n);
+    byte nearest(byte n);
 
 };
 

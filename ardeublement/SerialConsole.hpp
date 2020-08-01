@@ -5,9 +5,10 @@
 #define SC_MSG_BUFLEN 48
 
 //todo: change composer
+//todo: show params
 
 typedef enum {
-  On, Off, Help, Key, Dev, SerialCommandsMax = Dev
+  On, Off, Key, Deviation, Tonality, BPM, Help, SerialCommandsMax = Help
 } SerialCommands;
 
 class SerialConsole {

@@ -14,11 +14,12 @@
 // todo: should there be an enumerated PARAM_SET/PARAM_GET with automatic dirty management?
 
 typedef struct {
-  int   deviation;
-  byte  center;
-  int   rate;
-  bool  running;
-  bool  dirty;
+  int     deviation;
+  byte    center;
+  int     bpm;
+  double  tonality; // 0-1
+  bool    running;
+  bool    dirty;
 } Params;
 
 extern Params GLOBAL_PARAMS;

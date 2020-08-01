@@ -24,7 +24,12 @@ Erik Satie coined the term "musique d'ameublement", or "furniture music" for his
 - **Multitimbral.** Composition and performance modes should be able to generate related instrumental parts on separate MIDI channels. An end user can then assign these channels to different voices. Performer modules may document the general voice categories for each of their channels, but an end user should be able to find pleasing voices on any multitimbral synth simply by exploration.
 
 ## Interface
-Areublement provides a number of parameters which can be interpreted however the module desires:
+Ardeublement provides a number of parameters which can be interpreted however the module desires:
 
 - `deviation`: a full-range signed int, representing the perceived excursion per step
 - `center`: a MIDI note number, representing the key, tonal center, or starting pitch
+
+## Module System
+Composition and performance modes should be pluggable. I studied the module systems used in Ornament and Crime, and Equation Composer. o_C's module system seemed more than I needed for this, so I went with a system similar to Equation Composer. To register a module, you need to include its header, add an instance of it to the registry, and update the registry count.
+
+I would like to get away from having all modules loaded in memory, but that's a later engineering project.
