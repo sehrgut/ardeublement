@@ -22,3 +22,9 @@ Erik Satie coined the term "musique d'ameublement", or "furniture music" for his
 - **High-Level.** The parameters settable from hardware should be high-level, musical parameters, like degree of tonality, structural self-correlation, pitch range, and tempo. Modules should handle interpretation of these parameters so that to control an Ardeublement installation, a non-technical user simply needs to adjust these large musical ideas without knowing the details of the mode they've selected.
 - **Polyphonic.** While the first target is good monophonic lines, polyphony and harmonization are eventual goals.
 - **Multitimbral.** Composition and performance modes should be able to generate related instrumental parts on separate MIDI channels. An end user can then assign these channels to different voices. Performer modules may document the general voice categories for each of their channels, but an end user should be able to find pleasing voices on any multitimbral synth simply by exploration.
+
+## Interface
+Areublement provides a number of parameters which can be interpreted however the module desires:
+
+- `deviation`: a full-range signed int, representing the perceived excursion per step
+- `center`: a MIDI note number, representing the key, tonal center, or starting pitch

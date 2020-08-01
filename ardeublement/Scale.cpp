@@ -9,6 +9,8 @@
 // todo: modular index into scales to avoid copy-and-rotate?
 // todo: return early if pegged
 
+#define LOGGER "Scale"
+
 void array_rotate_right(bool a[], int len)
 {
   int i;
@@ -39,7 +41,7 @@ Scale::Scale (int root) {
 }
 
 int Scale::up(int n) {
-  Logger::log("[Scale::up] note %d in scale? %s\n", n, this->sc[n%12] ? "true" : "false");
+  Logger::log(LOGGER, "(up) note %d in scale? %s", n, this->sc[n%12] ? "true" : "false");
   if (this->sc[(n+1)%12]) {
     return min(n+1, 127);
   } else if (this->sc[(n+2)%12]) {
@@ -48,7 +50,7 @@ int Scale::up(int n) {
 }
 
 int Scale::down(int n) {
-  Logger::log("[Scale::down] note %d in scale? %s\n", n, this->sc[n%12] ? "true" : "false");
+  Logger::log(LOGGER, "(down) note %d in scale? %s", n, this->sc[n%12] ? "true" : "false");
   if (this->sc[(n-1)%12]) {
     return max(n-1, 0);
   } else if (this->sc[(n-2)%12]) {

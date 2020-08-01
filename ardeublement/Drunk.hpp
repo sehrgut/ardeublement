@@ -2,18 +2,31 @@
 #define DRUNK_HPP
 
 #include <arduino.h>
+#include "ComposeModule.hpp"
 #include "Scale.hpp"
 
-class Drunk {
+// BUG: after stop and start, Drunk picks next note == 0
+// todo: ComposeModule abstract class
+
+class Drunk : public ComposeModule {
   private:
-    int prev;
+    int counter = 0;
+    int prev = 0;
     int stepSize = 1;
-    Scale *sc;
+    Scale *sc = NULL;
+    void setStep(int n);
+    void setCenter(byte n);
 
   public:
-    Drunk(int startNote);
-    void setStep(int n);
-    int next();
+    Drunk();
+    ~Drunk();
+
+  // ComposeModule
+    void init(Params p);
+    void set(Params p);
+    byte next();
+
+    
     int nextDiatonic();
 };
 
