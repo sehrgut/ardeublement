@@ -6,6 +6,7 @@
 
 //todo: change composer
 //todo: show params
+//todo: interrupt routine pausing playback
 
 typedef enum {
   On, Off, Key, Deviation, Tonality, BPM, Help, SerialCommandsMax = Help

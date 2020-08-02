@@ -2,11 +2,13 @@
 #define MIDICLOCK_HPP
 
 #define MIDICLOCK_NUM_WATCHERS 16
-#define MIDICLOCK_INTERRUPT_MICROS 100
+#define MIDICLOCK_RESOLUTION_MICROS 1000
+
+typedef unsigned int midiclock_ticks_t;
 
 class MidiClockWatcher {
   public:
-    virtual void tick(unsigned long ticks) = 0;
+    virtual void tick(midiclock_ticks_t ticks) = 0;
     virtual void stop() = 0;
 };
 
@@ -14,7 +16,7 @@ class MidiClock {
   private:
     unsigned long prev_us;
     unsigned long cur_us;
-    unsigned long ticks;
+    midiclock_ticks_t ticks;
     bool running;
     
     MidiClockWatcher *watchers[MIDICLOCK_NUM_WATCHERS];
@@ -25,7 +27,7 @@ class MidiClock {
     
   public:
     int bpm = 120;
-    volatile float midInterval;
+    volatile float pulse_interval;
 
     void start();
     void stop();

@@ -5,9 +5,11 @@
 #include "SerialConsole.hpp"
 #include "MidiClock.hpp"
 #include "PerformModule.hpp"
+#include "Util.hpp"
 
 // todo: port delay-based performers to clock-based
 // todo: everything is a Module subtype, and Module.set(Params) is how all globals get around
+// todo: rethink main architecture of composer/startcomposer/etc
 
 MIDI_CREATE_DEFAULT_INSTANCE();
 
@@ -47,6 +49,7 @@ void start_composer() {
   Logger::log(LOGGER,"(start_composer) starting composer");
   mainclock.start();
   compose->init(GLOBAL_PARAMS);
+  perform->init(GLOBAL_PARAMS);
   GLOBAL_PARAMS.running = true;
 }
 
@@ -62,39 +65,6 @@ void restart_composer() {
 }
 
 
-
-// todo: PerformModule abstract class
-void arp(int n, int rate, int sustain, int wait) {
-  int n1 = n+4 > 127 ? -1 : n+4;
-  int n2 = n+7 > 127 ? -1 : n+7;
-  
-  MIDI.sendNoteOn(n, 127, CH_OUT);
-  delay(rate);
-  if (n1 >= 0) {
-    MIDI.sendNoteOn(n1, 127, CH_OUT);
-    delay(rate);
-  }
-
-  if (n2 >= 0) {
-    MIDI.sendNoteOn(n2, 127, CH_OUT);
-    delay(rate);
-  }
-
-  delay(sustain);
-  
-  MIDI.sendNoteOff(n, 0, CH_OUT);
-  if (n1 >= 0) MIDI.sendNoteOff(n1, 0, CH_OUT);
-  if (n2 >= 0) MIDI.sendNoteOff(n2, 0, CH_OUT);
-
-  delay(wait);
-}
-
-void play(int n, int sustain, int wait) {
-  MIDI.sendNoteOn(n, 127, CH_OUT);
-  delay(sustain);
-  MIDI.sendNoteOff(n, 0, CH_OUT);
-  delay(wait);
-}
 
 void update_params() {  
   if (GLOBAL_PARAMS.dirty == true) {
@@ -122,6 +92,8 @@ void setup() {
 
     pinMode(LED_BUILTIN, OUTPUT);
     randomSeed(analogRead(PIN_SEED));
+    FastRand::srand(analogRead(PIN_SEED));
+    FastRand::srandom(analogRead(PIN_SEED));
     MIDI.begin(CH_IN);
     MIDI.sendControlChange(midi::MidiControlChangeNumber::AllNotesOff, 0, CH_OUT);
     MIDI.sendControlChange(midi::MidiControlChangeNumber::AllSoundOff, 0, CH_OUT); // todo: panic should maybe send noteoff for 0-127?
@@ -129,16 +101,8 @@ void setup() {
 
 
 void loop() {
-
+  Logger::log(LOGGER, "loop");
   console->process_commands();
   update_params();
-/*
-  if (GLOBAL_PARAMS.running == true) { //todo: performer module
-    digitalWrite(LED_BUILTIN, HIGH);
-    int n = compose->next();
-    Logger::log(LOGGER, "Next note: %d", n);
-    //arp(n, 2900, 3000, 1000);
-    play(n, 300, 50);
-    digitalWrite(LED_BUILTIN, LOW);
-  }*/
+  perform->service();
 }

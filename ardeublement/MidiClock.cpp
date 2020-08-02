@@ -10,7 +10,7 @@ MidiClock::MidiClock() {
   this->prev_us = micros();
   this->cur_us = micros();
   
-  Timer3.initialize(MIDICLOCK_INTERRUPT_MICROS); //todo: ties-up some pins, check docs
+  Timer3.initialize(MIDICLOCK_RESOLUTION_MICROS); //todo: ties-up some pins, check docs
 }
 
 MidiClock::~MidiClock() {
@@ -30,9 +30,9 @@ void MidiClock::tick() { //do this every time the Timer3 interval timer is trigg
   MidiClock& that = MidiClock::instance();
   
   that.cur_us = micros();
-  that.midInterval = (1000/(that.bpm/60.0))/PPQN;//set the midi clock using ref to bpm
+  that.pulse_interval = (1000/(that.bpm/60.0))/PPQN;//set the midi clock using ref to bpm
   
-  if ((that.cur_us - that.prev_us) > that.midInterval*1000) {
+  if ((that.cur_us - that.prev_us) > that.pulse_interval*1000) {
 
     // service watchers
     int i;
@@ -43,6 +43,7 @@ void MidiClock::tick() { //do this every time the Timer3 interval timer is trigg
     that.prev_us = that.cur_us;
     that.ticks++;
     //if(this->ticks >=stepNum){ticks=0;} // todo: figure out rollover, since there's no step count
+    // todo: test rollover by setting ticks to a byte instead of unsigned long
   
   }//end if intervl time hit
 }

@@ -33,3 +33,12 @@ Ardeublement provides a number of parameters which can be interpreted however th
 Composition and performance modes should be pluggable. I studied the module systems used in Ornament and Crime, and Equation Composer. o_C's module system seemed more than I needed for this, so I went with a system similar to Equation Composer. To register a module, you need to include its header, add an instance of it to the registry, and update the registry count.
 
 I would like to get away from having all modules loaded in memory, but that's a later engineering project.
+
+## MIDI Clock Resolution
+The clock resolution of other projects I've seen is 100us, which provides minimal jitter, but can have diminishing returns. For instance, maintaining a clock of that resolution means that ticks can occur with very little jitter, but with diminishing returns. If so much work is being spent on maintaining a high-resolution clock, less work is available for the underlying performance, resulting in missed notes.
+
+If a low-jitter clock is really needed, it should probably come from outside. Implementing an external MIDI sync mode should be simpler than attempting to make a single Arduino handle both generative music and high-resolution clock maintenance.
+
+Thus, setting the resolution to 1ms.
+
+
