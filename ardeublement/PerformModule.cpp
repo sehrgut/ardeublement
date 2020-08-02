@@ -3,6 +3,7 @@
 #include "MidiClock.hpp"
 #include "PerformModule.hpp"
 #include "ComposeGaussian.hpp"
+#include "ComposeDrunk.hpp"
 #include "Util.hpp"
 #include "Logger.hpp"
 
@@ -13,7 +14,6 @@ union LongBytes {
   byte bytes[sizeof(long)];
 };
 
-// todo: pass in global params
 
 enum ClockDivisions {
   WHOLE         = 24 * 4,
@@ -36,36 +36,54 @@ PerformModule::PerformModule(MidiInterface& midi_interface)
 {
   this->compose = new ComposeGaussian();
   this->ticks = 0;
-  this->voice.chan = CH_OUT;
+  
+  int i;
+  for (i=0; i<NUM_VOICES; i++)
+	  this->voices[i].chan = CH_OUT;
 }
 
+// todo: expiry scheduling is less good than ticks%duration, because voices can drift off-count
+// modulo ticks will always be on agreed-upon counts.
+// however, modulo ticks stands in the way of some humanize possibilities.
+// maybe duration and over/under hold? that would allow following notes to receive the
+// remainder of their nominal duration.
 void PerformModule::sendVoice() {
 // todo: actiontype NONE for init, stream dead, etc
 
-  if (this->voice.playing) {
-    //bool action_expires = (this->voice.action.dur == 0 || this->ticks % this->voice.action.dur == 0);
-    bool action_expires = (this->voice.expires == this->ticks);
-    if (action_expires) {
-      //Logger::log(LOGGER, "expires: %d, ticks: %d", expires, this->ticks);
-      if (this->voice.action.mode == VoiceMode::Note) {
-        this->MIDI.sendNoteOff(this->voice.action.note, 0, this->voice.chan);
-      }
-      this->voice.playing = false;
-    }
-  }
+	// does this term re-sync at all?
+	int jitter = this->ticks % THIRTYSECOND;
 
-  if (!this->voice.playing) {
-    if (!this->actions.isEmpty()) {
-      this->voice.action = this->actions.pop();
+	int i;
+	for (i=0; i<NUM_VOICES; i++) {
+	  Voice *v = &this->voices[i];
+	  ActionQueue *a = &this->actions[i];
+	  
+	  if (v->playing) {
+//	  	if (this->ticks % v->action.dur == 0) {
+		if (v->expires == this->ticks) {
+		  //Logger::log(LOGGER, "expires: %d, ticks: %d", expires, this->ticks);
+		  if (v->action.mode == VoiceMode::Note) {
+			this->MIDI.sendNoteOff(v->action.note, 0, v->chan);
+		  }
+		  v->playing = false;
+		}
+	  }
 
-      if (this->voice.action.mode == VoiceMode::Note) {
-        this->MIDI.sendNoteOn(this->voice.action.note, this->voice.action.vel, this->voice.chan);
-      }
+	  if (!v->playing) {
+		if (!a->isEmpty()) {
+    	  //Logger::log(LOGGER, "(sendVoice) sending voice %d", i);
+		  v->action = a->pop();
 
-      this->voice.expires = this->ticks + this->voice.action.dur;
-      this->voice.playing = true;
-    }
-  }
+		  if (v->action.mode == VoiceMode::Note) {
+			this->MIDI.sendNoteOn(v->action.note, v->action.vel, v->chan);
+		  }
+
+		  v->expires = this->ticks + v->action.dur + jitter;
+		  v->playing = true;
+		}
+	  }
+	}
+
   
 }
 
@@ -80,19 +98,27 @@ void PerformModule::service() {
   Logger::log(LOGGER,"(service) this->voice.action.dur: %d", this->voice.action.dur);
   Logger::log(LOGGER,"(service) this->actions.itemCount: %d", this->actions.itemCount());
 */
-  while (!this->actions.isFull()) {
-    union LongBytes r;
-    r.longval = FastRand::random();
-    
-    VoiceAction next = {
-      mode: VoiceMode::Note,
-      note: this->compose->next(),
-      vel:  r.bytes[0],
-      dur:  r.bytes[1] > 127 ? HALF : QUARTER,
-    };
+    int i;
+    for (i=0; i<NUM_VOICES; i++) {
+    	//Logger::log(LOGGER, "(service) servicing voice %d", i);
+    	ActionQueue *a = &this->actions[i];
+    	
+    	if (!a->isFull()) {
+			union LongBytes r;
+			r.longval = FastRand::random();
 
-    this->actions.unshift(next);
-  }
+			bool rest  = (r.bytes[0] < 32);
+	
+			VoiceAction next = {
+			  mode: (rest ? VoiceMode::Rest : VoiceMode::Note),
+			  note: (rest ? 0 : this->compose->next()),
+			  vel:  r.bytes[2] / 2 + 128,
+			  dur:  (r.bytes[1] > 127 ? QUARTER : r.bytes[1] > 63 ? HALF : r.bytes[1] > 31 ? WHOLE : EIGHTH),
+			};
+
+			a->unshift(next);
+		}
+	}
 }
 
 void PerformModule::init(Params p) {
@@ -110,7 +136,11 @@ void PerformModule::tick(midiclock_ticks_t ticks) {
 }
 
 void PerformModule::stop() {
-  this->MIDI.sendNoteOff(this->voice.action.note, 0, this->voice.chan);
+  int i;
+  for (i=0; i<NUM_VOICES; i++) {
+  	Voice *v = &this->voices[i];
+    this->MIDI.sendNoteOff(v->action.note, 0, v->chan);
+  }
 }
 
 
@@ -119,17 +149,8 @@ void PerformModule::stop() {
 
 
 
-/*
-  if (GLOBAL_PARAMS.running == true) { //todo: performer module
-    digitalWrite(LED_BUILTIN, HIGH);
-    int n = compose->next();
-    Logger::log(LOGGER, "Next note: %d", n);
-    //arp(n, 2900, 3000, 1000);
-    play(n, 300, 50);
-    digitalWrite(LED_BUILTIN, LOW);
-  }*/
 
-
+// todo: polyphonic perform mode
 //void arp(int n, int rate, int sustain, int wait) {
 //  int n1 = n+4 > 127 ? -1 : n+4;
 //  int n2 = n+7 > 127 ? -1 : n+7;
@@ -152,12 +173,5 @@ void PerformModule::stop() {
 //  if (n1 >= 0) MIDI.sendNoteOff(n1, 0, CH_OUT);
 //  if (n2 >= 0) MIDI.sendNoteOff(n2, 0, CH_OUT);
 //
-//  delay(wait);
-//}
-//
-//void play(int n, int sustain, int wait) {
-//  MIDI.sendNoteOn(n, 127, CH_OUT);
-//  delay(sustain);
-//  MIDI.sendNoteOff(n, 0, CH_OUT);
 //  delay(wait);
 //}

@@ -5,7 +5,6 @@
 
 #define LOGGER "SerialConsole"
 
-// todo: buffer for snprintf
 // todo: better globals interface
 // todo: compile-out debug lines
 // todo: midi note number format specifier
@@ -101,7 +100,7 @@ void SerialConsole::run_command(char *cmd, int value) {
 
 void SerialConsole::process_commands() {
   int i=0; // todo: will this need to pick up from other calls?
-  Logger::log(LOGGER, "(process_commands)");
+  //Logger::log(LOGGER, "(process_commands)");
   while(Serial.available()){
     if (i < SC_CMD_BUFLEN-1) {
       this->cmdbuf[i++] = Serial.read();     

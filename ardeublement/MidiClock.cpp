@@ -42,8 +42,6 @@ void MidiClock::tick() { //do this every time the Timer3 interval timer is trigg
     
     that.prev_us = that.cur_us;
     that.ticks++;
-    //if(this->ticks >=stepNum){ticks=0;} // todo: figure out rollover, since there's no step count
-    // todo: test rollover by setting ticks to a byte instead of unsigned long
   
   }//end if intervl time hit
 }

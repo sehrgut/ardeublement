@@ -37,7 +37,7 @@ byte ComposeGaussian::next() {
   byte hi = min(127, this->center + (3*this->dev));
 
   //Logger::log(NAME, "looking for int between %d and %d", lo, hi);
-  byte a = (byte)Gaussian::clamped_gauss(double(lo), double(hi));
+  byte a = (byte)Gaussian::gauss8(lo, hi);
 
   if (this->tonality > 0 && Uniform::random_bool(this->tonality) == true)
     a = this->sc->nearest(a);

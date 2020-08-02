@@ -4,10 +4,8 @@
 #include "Logger.hpp"
 #include "SerialConsole.hpp"
 #include "MidiClock.hpp"
-#include "PerformModule.hpp"
 #include "Util.hpp"
 
-// todo: port delay-based performers to clock-based
 // todo: everything is a Module subtype, and Module.set(Params) is how all globals get around
 // todo: rethink main architecture of composer/startcomposer/etc
 
@@ -16,31 +14,36 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 #define LOGGER "main"
 #define CH_IN 2
 #define CH_OUT 1
-#define PIN_SEED A0
+#define PIN_SEED A4
 
 // REGISTER PLUGINS
-#include "Drunk.hpp"
+#include "ComposeDrunk.hpp"
 #include "ComposeGaussian.hpp"
+#include "PerformModule.hpp"
 
 #define NUM_COMPOSERS 2
 ComposeModule *composers[] {
-  new Drunk(),
+  new ComposeDrunk(),
   new ComposeGaussian()
 };
 
+#define NUM_PERFORMERS 1
+PerformModule *performers[] {
+	new PerformModule(MIDI)
+};
 
 
-
+// Instantiate other modules
 static ComposeModule *compose;
-static SerialConsole *console;
+static PerformModule* perform;
+static SerialConsole console;
 static MidiClock& mainclock = MidiClock::instance();
-static PerformModule* perform = new PerformModule(MIDI);
 
 static Params GLOBAL_PARAMS = {
   .deviation = 4,
   .center = 60,
   .bpm = 100,
-  .tonality = 0.0,
+  .tonality = 0.75,
   .running = false // todo: need running and should_run
 };
 
@@ -84,25 +87,37 @@ void update_params() {
 
 
 void setup() {
-    compose = composers[1];   
+    compose = composers[1];
+    perform = performers[0];
     mainclock.watch(perform);
-    console = new SerialConsole();
     delay(1000);
     start_composer();
 
     pinMode(LED_BUILTIN, OUTPUT);
-    randomSeed(analogRead(PIN_SEED));
+    
+    randomSeed(analogRead(PIN_SEED)); // seeding in case a library ever uses it. We won't.
     FastRand::srand(analogRead(PIN_SEED));
     FastRand::srandom(analogRead(PIN_SEED));
+    
     MIDI.begin(CH_IN);
+    
+    // MIDI Panic in case of hung notes on reset
+    // todo: how to MIDI panic with multitimbral performers? some kind of channel registry?
     MIDI.sendControlChange(midi::MidiControlChangeNumber::AllNotesOff, 0, CH_OUT);
-    MIDI.sendControlChange(midi::MidiControlChangeNumber::AllSoundOff, 0, CH_OUT); // todo: panic should maybe send noteoff for 0-127?
+    MIDI.sendControlChange(midi::MidiControlChangeNumber::AllSoundOff, 0, CH_OUT);
+    
+    // for those destinations that don't respect the CCs
+    byte i;
+    for (i=0; i<128; i++)
+    	MIDI.sendNoteOff(i, 0, CH_OUT);
 }
 
 
 void loop() {
-  Logger::log(LOGGER, "loop");
-  console->process_commands();
+  //Logger::log(LOGGER, "loop");
+  digitalWrite(LED_BUILTIN, HIGH);
+  console.process_commands();
   update_params();
+  digitalWrite(LED_BUILTIN, LOW);
   perform->service();
 }

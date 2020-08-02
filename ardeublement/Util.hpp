@@ -7,6 +7,9 @@ class FastRand {
   private:
     static uint16_t state16;
     static uint32_t state32;
+
+    FastRand();
+    
   public:
     static void srand(uint16_t s);
     static uint16_t rand();
@@ -15,15 +18,22 @@ class FastRand {
 };
 
 class Gaussian {
+  private:
+    Gaussian();
 
   public:
     static double gaussrand();
     static double gauss_in_dist(double mean, double stdev);
     static double clamped_gauss(double a, double b);
-    static int gaussint(int lo, int hi);
+    
+	static char gauss8(char lo, char hi);
+
 };
 
+
 class Uniform {
+  private:
+    Uniform();
 
   public:
     static bool random_bool(double p);

@@ -3,8 +3,8 @@
 
 // params should be self-similarity, tonality, etc.
 /*
- * Range: distance from center
- * Deviation: change per iteration
+ * Range: distance from center, should there be rangelow/rangehigh?
+ * Deviation: change per iteration, should be % of range
  * Center: the tonal and physical center of the piece
  * Tonality:
  * Coherence: repetition? self-similarity? no good name for this yet

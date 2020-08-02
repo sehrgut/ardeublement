@@ -8,9 +8,8 @@
 #include "Params.hpp"
 
 #define CH_OUT 1 //todo: channel(s) set up by main
-
-// todo: separation of concerns between service() low-priority and tick() high-priority code.
-//       note calculation should be done in service() and made available to tick()
+#define NUM_VOICES 3 // todo: multiple composers
+#define QUEUE_LEN 4
 
 // todo: https://github.com/FortySevenEffects/arduino_midi_library/issues/162
 typedef midi::MidiInterface<midi::SerialMIDI<HardwareSerial>> MidiInterface;
@@ -27,6 +26,8 @@ typedef struct {
   int       dur;  
 } VoiceAction;
 
+typedef CircularBuffer<VoiceAction, QUEUE_LEN> ActionQueue;
+
 typedef struct {
   byte        chan;
   VoiceAction action;
@@ -40,8 +41,8 @@ class PerformModule : public MidiClockWatcher {
     MidiInterface& MIDI;
     ComposeModule* compose;
 
-    CircularBuffer<VoiceAction, 4> actions;
-    volatile Voice voice = { 0 };
+    volatile ActionQueue actions[NUM_VOICES];
+    volatile Voice voices[NUM_VOICES];
 
     void PerformModule::sendVoice();
 
