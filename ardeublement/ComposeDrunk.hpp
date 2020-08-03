@@ -6,9 +6,9 @@
 #include "Scale.hpp"
 
 #define MIDDLE_C 60
-// BUG: after stop and start, ComposeDrunk picks next note == 0
 
-
+/** Composes pitches according to a constrained Drunkard's Walk.
+ */
 class ComposeDrunk : public ComposeModule {
   private:
     int counter = 0;
@@ -28,9 +28,6 @@ class ComposeDrunk : public ComposeModule {
     void init(Params p);
     void set(Params p);
     byte next();
-
-    
-    int nextDiatonic();
 };
 
 #endif

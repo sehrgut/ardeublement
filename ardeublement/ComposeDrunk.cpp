@@ -4,8 +4,12 @@
 #include "Logger.hpp"
 #include "Util.hpp"
 
-// todo: "gravity" towards start note, less probability of higher steps as higher on scale
-// todo: normal dists
+/*
+okay what about this?
+Coherence: tropism to previous note vs tropism to center
+	coh=0.0, 100% center tropism, aka Gaussian Sample
+	coh=1.0, 100% previous-note tropism, aka Drunkard's Walk
+*/
 
 #define LOGGER "ComposeDrunk"
 

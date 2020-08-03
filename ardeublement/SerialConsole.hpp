@@ -9,7 +9,7 @@
 //todo: interrupt routine pausing playback
 
 typedef enum {
-  On, Off, Key, Deviation, Tonality, BPM, Help, SerialCommandsMax = Help
+  On, Off, Key, Deviation, Tonality, Coherence, BPM, Print, Help, SerialCommandsMax = Help
 } SerialCommands;
 
 class SerialConsole {

@@ -4,6 +4,9 @@
 #include "Scale.hpp"
 #include "ComposeModule.hpp"
 
+/** Composes pitches selected from a Gaussian distribution about the center pitch. 
+ */
+
 class ComposeGaussian : public ComposeModule {
   private:
     byte center = 0;

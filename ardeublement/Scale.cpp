@@ -8,6 +8,7 @@
 // todo: bytes?
 // todo: modular index into scales to avoid copy-and-rotate?
 // todo: return early if pegged
+// todo: Scala support
 
 #define LOGGER "Scale"
 

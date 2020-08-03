@@ -14,10 +14,12 @@
 // todo: should there be an enumerated PARAM_SET/PARAM_GET with automatic dirty management?
 
 typedef struct {
-  int     deviation;
-  byte    center;
-  int     bpm;
+  int     deviation; // todo: make double 0-1 % of range
   double  tonality; // 0-1
+  double  coherence; // 0-1
+  byte    center;
+  byte    range; // 0-127, centered on center
+  int     bpm; //todo: rate?
   bool    running;
   bool    dirty;
 } Params;

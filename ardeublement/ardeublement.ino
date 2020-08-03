@@ -17,15 +17,7 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 #define PIN_SEED A4
 
 // REGISTER PLUGINS
-#include "ComposeDrunk.hpp"
-#include "ComposeGaussian.hpp"
 #include "PerformModule.hpp"
-
-#define NUM_COMPOSERS 2
-ComposeModule *composers[] {
-  new ComposeDrunk(),
-  new ComposeGaussian()
-};
 
 #define NUM_PERFORMERS 1
 PerformModule *performers[] {
@@ -39,11 +31,21 @@ static PerformModule* perform;
 static SerialConsole console;
 static MidiClock& mainclock = MidiClock::instance();
 
+/*  int     deviation; // todo: make double 0-1 % of range
+  double  tonality; // 0-1
+  double  coherence; // 0-1
+  byte    center;
+  byte    range; // 0-127, centered on center
+
+*/
+
 static Params GLOBAL_PARAMS = {
   .deviation = 4,
-  .center = 60,
-  .bpm = 100,
   .tonality = 0.75,
+  .coherence = 0.5,
+  .center = 60,
+  .range = 87,
+  .bpm = 100,
   .running = false // todo: need running and should_run
 };
 
@@ -51,7 +53,6 @@ static Params GLOBAL_PARAMS = {
 void start_composer() {
   Logger::log(LOGGER,"(start_composer) starting composer");
   mainclock.start();
-  compose->init(GLOBAL_PARAMS);
   perform->init(GLOBAL_PARAMS);
   GLOBAL_PARAMS.running = true;
 }
@@ -87,7 +88,6 @@ void update_params() {
 
 
 void setup() {
-    compose = composers[1];
     perform = performers[0];
     mainclock.watch(perform);
     delay(1000);

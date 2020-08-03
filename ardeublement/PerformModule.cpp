@@ -4,6 +4,7 @@
 #include "PerformModule.hpp"
 #include "ComposeGaussian.hpp"
 #include "ComposeDrunk.hpp"
+#include "ComposeRand.hpp"
 #include "Util.hpp"
 #include "Logger.hpp"
 
@@ -34,7 +35,7 @@ char* actionModeNames[2] = {"Rest","Note"};
 PerformModule::PerformModule(MidiInterface& midi_interface)
   : MIDI(midi_interface)
 {
-  this->compose = new ComposeGaussian();
+  this->compose = new ComposeDrunk();
   this->ticks = 0;
   
   int i;
@@ -121,8 +122,9 @@ void PerformModule::service() {
 	}
 }
 
+// todo: store reference to params for later use?
 void PerformModule::init(Params p) {
-  this->compose->set(p);
+  this->compose->init(p);
 }
 
 void PerformModule::set(Params p) {

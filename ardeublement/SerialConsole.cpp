@@ -9,8 +9,9 @@
 // todo: compile-out debug lines
 // todo: midi note number format specifier
 // todo: interpret scientific pitch notation for key
+// todo: command to print current params
 
-const char* SerialCommandNames[SerialCommandsMax+1] = { "on", "off", "key", "dev", "ton", "bpm", "?" };
+const char* SerialCommandNames[SerialCommandsMax+1] = { "on", "off", "key", "dev", "ton", "coh", "bpm", "p", "?" };
 
 SerialConsole::SerialConsole() {
 }
@@ -78,6 +79,25 @@ void SerialConsole::run_command(char *cmd, int value) {
             this->write("Tonality updated: %d\n", value);
           }
           break;
+        case Coherence:
+          if (value < 0 || value > 100) {
+            this->write("Coherence must be between 0 and 100.\n");
+          } else {
+            GLOBAL_PARAMS.coherence = (double)value / 100.0;
+            GLOBAL_PARAMS.dirty = true;
+            this->write("Coherence updated: %d\n", value);
+          }
+          break;
+        case Print:
+          this->write("DEV=%d TON=%d COH=%d R=%d KEY=%d BPM=%d\n",
+            GLOBAL_PARAMS.deviation,
+            (int)(GLOBAL_PARAMS.tonality * 100),
+            (int)(GLOBAL_PARAMS.coherence * 100),
+			GLOBAL_PARAMS.range,
+            GLOBAL_PARAMS.center,
+            GLOBAL_PARAMS.bpm
+            );
+          break;
         case BPM:
           if (value < 0) {
             this->write("BPM must be > 0.\n");
@@ -88,7 +108,7 @@ void SerialConsole::run_command(char *cmd, int value) {
           }
           break;
         case Help:
-          this->write("Usage: [[dev|key] INT] | [on|off|bpm|ton|?]\n");
+          this->write("Usage: [[dev|key|bpm|ton|coh] INT] | [on|off|p|?]\n");
           break;
         default:
           this->write("Unknown command: '%s'\n", cmd);
