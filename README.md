@@ -41,4 +41,10 @@ If a low-jitter clock is really needed, it should probably come from outside. Im
 
 Thus, setting the resolution to 1ms.
 
+## Acknowledgements
+- MidiClock is heavily based on the implementation by [mortonkopf's Teensy-Midi-Euclidean-Sequencer][teensy_seq]
+- FastRand implements Marsaglia's xorshift with constants suggested by [John Metcalf][xorshift_z80].
+
+[teensy_seq]: https://github.com/mortonkopf/Teensy-Midi-Euclidean-Sequencer
+[xorshift_z80]: http://www.retroprogramming.com/2017/07/xorshift-pseudorandom-numbers-in-z80.html
 

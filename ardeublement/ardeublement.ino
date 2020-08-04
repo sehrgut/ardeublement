@@ -52,8 +52,9 @@ static Params GLOBAL_PARAMS = {
 
 void start_composer() {
   Logger::log(LOGGER,"(start_composer) starting composer");
-  mainclock.start();
   perform->init(GLOBAL_PARAMS);
+  perform->service();
+  mainclock.start();
   GLOBAL_PARAMS.running = true;
 }
 
@@ -95,12 +96,13 @@ void setup() {
 
     pinMode(LED_BUILTIN, OUTPUT);
     
-    randomSeed(analogRead(PIN_SEED)); // seeding in case a library ever uses it. We won't.
+    // Seed the RNGs. Even the libc ones, in case any lib ever uses them. We sha'n't.
+    srand(analogRead(PIN_SEED));
+    srandom(analogRead(PIN_SEED));
     FastRand::srand(analogRead(PIN_SEED));
     FastRand::srandom(analogRead(PIN_SEED));
     
     MIDI.begin(CH_IN);
-    
     // MIDI Panic in case of hung notes on reset
     // todo: how to MIDI panic with multitimbral performers? some kind of channel registry?
     MIDI.sendControlChange(midi::MidiControlChangeNumber::AllNotesOff, 0, CH_OUT);
@@ -110,14 +112,25 @@ void setup() {
     byte i;
     for (i=0; i<128; i++)
     	MIDI.sendNoteOff(i, 0, CH_OUT);
+
 }
 
 
 void loop() {
-  //Logger::log(LOGGER, "loop");
-  digitalWrite(LED_BUILTIN, HIGH);
-  console.process_commands();
+/* In case there's first-loop stuff that needs to be done after setup() */
+  static bool first_run = true;
+  if (first_run) {
+    // todo: BUG, something weird with SerialConsole, looks related to:
+    // https://github.com/arduino/Arduino/issues/5797, so probably need to burn a new
+    // bootloader. Regardless, without this, SerialConsole::process_commands gets
+    // stuck on boot.
+	Logger::log(LOGGER, "kickstart");
+    first_run = false;
+  }
+//  Logger::log(LOGGER, "loop");
   update_params();
-  digitalWrite(LED_BUILTIN, LOW);
+  digitalWrite(LED_BUILTIN, HIGH);
   perform->service();
+  digitalWrite(LED_BUILTIN, LOW);
+  console.process_commands();
 }

@@ -5,8 +5,8 @@
 #define SC_MSG_BUFLEN 48
 
 //todo: change composer
-//todo: show params
 //todo: interrupt routine pausing playback
+//todo: BUG, sometimes hangs on process_commands() unless a logger line has occurred
 
 typedef enum {
   On, Off, Key, Deviation, Tonality, Coherence, BPM, Print, Help, SerialCommandsMax = Help

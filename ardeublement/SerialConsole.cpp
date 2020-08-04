@@ -14,6 +14,7 @@
 const char* SerialCommandNames[SerialCommandsMax+1] = { "on", "off", "key", "dev", "ton", "coh", "bpm", "p", "?" };
 
 SerialConsole::SerialConsole() {
+  Serial.begin(9600);
 }
 
 // todo: should this be static?
@@ -108,7 +109,8 @@ void SerialConsole::run_command(char *cmd, int value) {
           }
           break;
         case Help:
-          this->write("Usage: [[dev|key|bpm|ton|coh] INT] | [on|off|p|?]\n");
+          this->write("Usage: [[dev|key|bpm|ton|coh] INT] |\n");
+          this->write("       [on|off|p|?]\n");
           break;
         default:
           this->write("Unknown command: '%s'\n", cmd);
@@ -121,13 +123,13 @@ void SerialConsole::run_command(char *cmd, int value) {
 void SerialConsole::process_commands() {
   int i=0; // todo: will this need to pick up from other calls?
   //Logger::log(LOGGER, "(process_commands)");
-  while(Serial.available()){
+  while(Serial.available() > 0){
     if (i < SC_CMD_BUFLEN-1) {
       this->cmdbuf[i++] = Serial.read();     
     } else {
       this->write("Error: command too long\n"); // todo: stop on newline?
       i = 0; //ignore command later
-      while (Serial.available()) //consume buffer
+      while (Serial.available() > 0) //consume buffer
         (void)Serial.read();
     }
   }

@@ -39,9 +39,11 @@
 - Separate composer classes for poly and mono
 - Multitimbral
   - Performers can use this for multiple voice parts, or more precise articulation
+
 ## Expanded Featureset
 - SD card support, for modes with large amounts of static data
 - MIDI clock in/out
 - SP-MIDI to support a variety of output devices
   - https://www.midi.org/specifications-old/item/scalable-polyphony-midi-sp-midi
-
+- Goldberg: a module that accepts a melody and improvises variations (from SD card)
+- Parsons: Generates melodies for Parsons codes (from SD card)
