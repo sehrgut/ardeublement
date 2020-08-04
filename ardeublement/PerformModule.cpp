@@ -35,7 +35,7 @@ char* actionModeNames[2] = {"Rest","Note"};
 PerformModule::PerformModule(MidiInterface& midi_interface)
   : MIDI(midi_interface)
 {
-  this->compose = new ComposeDrunk();
+  this->compose = new ComposeRand();
   this->ticks = 0;
   
   int i;
@@ -58,7 +58,8 @@ void PerformModule::sendVoice() {
 	for (i=0; i<NUM_VOICES; i++) {
 	  Voice *v = &this->voices[i];
 	  ActionQueue *a = &this->actions[i];
-	  
+
+// todo: BUG, seems to play a low note first before any voices have been serviced.	  
 	  if (v->playing) {
 //	  	if (this->ticks % v->action.dur == 0) {
 		if (v->expires == this->ticks) {
@@ -99,6 +100,12 @@ void PerformModule::service() {
   Logger::log(LOGGER,"(service) this->voice.action.dur: %d", this->voice.action.dur);
   Logger::log(LOGGER,"(service) this->actions.itemCount: %d", this->actions.itemCount());
 */
+
+#define RLEN 8
+
+	static byte rcur[NUM_VOICES] = {0};
+	static byte rhythm[NUM_VOICES][RLEN] = {0};
+
     int i;
     for (i=0; i<NUM_VOICES; i++) {
     	//Logger::log(LOGGER, "(service) servicing voice %d", i);
@@ -108,16 +115,30 @@ void PerformModule::service() {
 			union LongBytes r;
 			r.longval = FastRand::random();
 
+// todo: rhythms now should be their own module.
+// todo: permute rhythm based on coherence?
 			bool rest  = (r.bytes[0] < 32);
+
+			if (rhythm[i][rcur[i]] == 0) {
+				rhythm[i][rcur[i]] = (
+					r.bytes[1] > 127 ? QUARTER
+					: r.bytes[1] > 63 ? HALF
+					: r.bytes[1] > 31 ? WHOLE
+					: EIGHTH);
+			} // else do something else with rbytes1?
 	
 			VoiceAction next = {
 			  mode: (rest ? VoiceMode::Rest : VoiceMode::Note),
 			  note: (rest ? 0 : this->compose->next()),
 			  vel:  r.bytes[2] / 2 + 128,
-			  dur:  (r.bytes[1] > 127 ? QUARTER : r.bytes[1] > 63 ? HALF : r.bytes[1] > 31 ? WHOLE : EIGHTH),
+			  dur:  rhythm[i][rcur[i]],
 			};
 
 			a->unshift(next);
+			
+			// need to bench this. Is it really faster than % with the avr compiler
+			// optimizations? see https://stackoverflow.com/a/13773421/2255888
+			rcur[i] = rcur[i] + 1 == RLEN ? 0 : rcur[i] + 1;
 		}
 	}
 }

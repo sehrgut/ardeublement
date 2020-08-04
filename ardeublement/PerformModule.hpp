@@ -28,6 +28,16 @@ typedef struct {
 
 typedef CircularBuffer<VoiceAction, QUEUE_LEN> ActionQueue;
 
+// todo: separation between "voice" and "part"
+//       - a Part gets 1 composer, 1 rhythm, and n voices
+//       - a Voice gets 1 channel
+//       - AbstractPerformer should only care about voice scheduling.
+
+/*
+  - class MonophonicPerformer(RhythmModule r, ComposeModule c)
+  - class PolyphonicPerformer(RhythmModule r, ComposeModule c, int voices)
+  - class MultitimbralPerformer(RhythmModule[] rr, ComposeModule cc, int voices)
+*/
 typedef struct {
   byte        chan;
   VoiceAction action;
