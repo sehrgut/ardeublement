@@ -1,7 +1,12 @@
 #ifndef UTIL_HPP
 #define UTIL_HPP
 
-// todo: private constructors
+#include <stdint.h>
+
+union LongBytes {
+  long longval;
+  byte bytes[sizeof(long)];
+};
 
 class FastRand {
   private:

@@ -3,6 +3,7 @@
 
 #include <arduino.h>
 #include <CircularBuffer.h>
+#include <MIDI.h>
 #include "ComposeModule.hpp"
 #include "MidiClock.hpp"
 #include "Params.hpp"
@@ -13,6 +14,15 @@
 
 // todo: https://github.com/FortySevenEffects/arduino_midi_library/issues/162
 typedef midi::MidiInterface<midi::SerialMIDI<HardwareSerial>> MidiInterface;
+
+enum ClockDivisions {
+  WHOLE         = 24 * 4,
+  HALF          = 24 * 2,
+  QUARTER       = 24,
+  EIGHTH        = 24 / 2,
+  SIXTEENTH     = 24/4,
+  THIRTYSECOND  = 24/8,
+};
 
 typedef enum {
   Rest = 0,
@@ -36,7 +46,7 @@ typedef CircularBuffer<VoiceAction, QUEUE_LEN> ActionQueue;
 /*
   - class MonophonicPerformer(RhythmModule r, ComposeModule c)
   - class PolyphonicPerformer(RhythmModule r, ComposeModule c, int voices)
-  - class MultitimbralPerformer(RhythmModule[] rr, ComposeModule cc, int voices)
+  - class MultitimbralPerformer(RhythmModule[] rr, ComposeModule cc[], int voices)
 */
 typedef struct {
   byte        chan;
@@ -49,16 +59,17 @@ class PerformModule : public MidiClockWatcher {
   private:
     midiclock_ticks_t ticks;
     MidiInterface& MIDI;
-    ComposeModule* compose;
 
-    volatile ActionQueue actions[NUM_VOICES];
     volatile Voice voices[NUM_VOICES];
+    void sendVoices();
 
-    void PerformModule::sendVoice();
+  protected:
+    ComposeModule* compose;
+    volatile ActionQueue actions[NUM_VOICES];
 
   public:
     PerformModule(MidiInterface& midi_interface);
-    void service();
+    virtual void service() = 0;
 
   //Module
     void init(Params p);

@@ -3,6 +3,8 @@
 
 #include "Params.hpp"
 
+// todo: polyphonic composition, e.g. multiple states, to avoid multiplying in-mem objs
+
 /*
  * init() - a module MUST discard runtime state and re-initialize with the given parameters
  * set() - a module MUST incorporate the given parameters into its current run, and it MAY re-initialize

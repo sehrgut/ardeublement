@@ -1,5 +1,4 @@
 #include <arduino.h>
-#include <MIDI.h>
 #include "MidiClock.hpp"
 #include "PerformModule.hpp"
 #include "ComposeGaussian.hpp"
@@ -8,22 +7,6 @@
 #include "Util.hpp"
 #include "Logger.hpp"
 
-#define LOGGER "PerformModule"
-
-union LongBytes {
-  long longval;
-  byte bytes[sizeof(long)];
-};
-
-
-enum ClockDivisions {
-  WHOLE         = 24 * 4,
-  HALF          = 24 * 2,
-  QUARTER       = 24,
-  EIGHTH        = 24 / 2,
-  SIXTEENTH     = 24/4,
-  THIRTYSECOND  = 24/8,
-};
 
 //------------------------------for midi and beat timing-------------------------------//
 char* divNames[6] ={"1/1","1/2","1/4","1/8","1/16","1/32"};
@@ -48,7 +31,7 @@ PerformModule::PerformModule(MidiInterface& midi_interface)
 // however, modulo ticks stands in the way of some humanize possibilities.
 // maybe duration and over/under hold? that would allow following notes to receive the
 // remainder of their nominal duration.
-void PerformModule::sendVoice() {
+void PerformModule::sendVoices() {
 // todo: actiontype NONE for init, stream dead, etc
 
 	// does this term re-sync at all?
@@ -89,59 +72,6 @@ void PerformModule::sendVoice() {
   
 }
 
-// doesn't know about ticks, just about notes and how long they are
-void PerformModule::service() {
-  /*
-  Logger::log(LOGGER, "(service) servicing performance");
-
-  Logger::log(LOGGER,"(service) this->voice.action.mode: %s", actionModeNames[this->voice.action.mode] );
-  Logger::log(LOGGER,"(service) this->voice.action.note: %d", this->voice.action.note);
-  Logger::log(LOGGER,"(service) this->voice.action.vel: %d", this->voice.action.vel);
-  Logger::log(LOGGER,"(service) this->voice.action.dur: %d", this->voice.action.dur);
-  Logger::log(LOGGER,"(service) this->actions.itemCount: %d", this->actions.itemCount());
-*/
-
-#define RLEN 8
-
-	static byte rcur[NUM_VOICES] = {0};
-	static byte rhythm[NUM_VOICES][RLEN] = {0};
-
-    int i;
-    for (i=0; i<NUM_VOICES; i++) {
-    	//Logger::log(LOGGER, "(service) servicing voice %d", i);
-    	ActionQueue *a = &this->actions[i];
-    	
-    	if (!a->isFull()) {
-			union LongBytes r;
-			r.longval = FastRand::random();
-
-// todo: rhythms now should be their own module.
-// todo: permute rhythm based on coherence?
-			bool rest  = (r.bytes[0] < 32);
-
-			if (rhythm[i][rcur[i]] == 0) {
-				rhythm[i][rcur[i]] = (
-					r.bytes[1] > 127 ? QUARTER
-					: r.bytes[1] > 63 ? HALF
-					: r.bytes[1] > 31 ? WHOLE
-					: EIGHTH);
-			} // else do something else with rbytes1?
-	
-			VoiceAction next = {
-			  mode: (rest ? VoiceMode::Rest : VoiceMode::Note),
-			  note: (rest ? 0 : this->compose->next()),
-			  vel:  r.bytes[2] / 2 + 128,
-			  dur:  rhythm[i][rcur[i]],
-			};
-
-			a->unshift(next);
-			
-			// need to bench this. Is it really faster than % with the avr compiler
-			// optimizations? see https://stackoverflow.com/a/13773421/2255888
-			rcur[i] = rcur[i] + 1 == RLEN ? 0 : rcur[i] + 1;
-		}
-	}
-}
 
 // todo: store reference to params for later use?
 void PerformModule::init(Params p) {
@@ -154,8 +84,7 @@ void PerformModule::set(Params p) {
 
 void PerformModule::tick(midiclock_ticks_t ticks) {
   this->ticks = ticks;
-
-  this->sendVoice();
+  this->sendVoices();
 }
 
 void PerformModule::stop() {

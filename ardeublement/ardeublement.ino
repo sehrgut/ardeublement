@@ -18,10 +18,12 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 
 // REGISTER PLUGINS
 #include "PerformModule.hpp"
+#include "PerformMonophonic.hpp"
+#include "PerformPolyphonic.hpp"
 
 #define NUM_PERFORMERS 1
 PerformModule *performers[] {
-	new PerformModule(MIDI)
+	new PerformPolyphonic(MIDI)
 };
 
 
@@ -127,7 +129,7 @@ void loop() {
 	Logger::log(LOGGER, "kickstart");
     first_run = false;
   }
-//  Logger::log(LOGGER, "loop");
+  Logger::log(LOGGER, "loop");
   update_params();
   digitalWrite(LED_BUILTIN, HIGH);
   perform->service();

@@ -2,7 +2,6 @@
 #include <arduino.h>
 #else
 
-#include <stdint.h>
 #include <math.h>
 #include <cstdlib>
 typedef unsigned char byte;
