@@ -4,13 +4,16 @@
 #include <Arduino.h>
 #include "PerformModule.hpp"
 
-class PerformMultitimbral : public PerformModule {
+template <size_t VOICE_COUNT>
+class PerformMultitimbral : public PerformModule<VOICE_COUNT> {
 	
 	public:
-		PerformMultitimbral(MidiInterface &midi_interface);
+		PerformMultitimbral(MidiInterface &MIDI);
 	
 	// PerfomModule
 	void service();
 };
+
+#include "PerformMultitimbral-impl.hpp"
 
 #endif

@@ -1,16 +1,18 @@
 #ifndef PERFORMPOLYPHONIC_HPP
 #define PERFORMPOLYPHONIC_HPP
 
-#include <Arduino.h>
 #include "PerformModule.hpp"
 
-class PerformPolyphonic : public PerformModule {
+template <size_t VOICE_COUNT>
+class PerformPolyphonic : public PerformModule<VOICE_COUNT> {
 	
 	public:
-		PerformPolyphonic(MidiInterface &midi_interface);
+		PerformPolyphonic(MidiInterface &MIDI);
 	
 	// PerfomModule
 	void service();
 };
+
+#include "PerformPolyphonic-impl.hpp"
 
 #endif

@@ -4,9 +4,9 @@
 
 #define LOGGER "PerformMonophonic"
 
-
-PerformMonophonic::PerformMonophonic(MidiInterface &midi_interface)
-	: PerformModule(midi_interface) { }
+PerformMonophonic::PerformMonophonic(MidiInterface &MIDI)
+	: PerformModule<1>(MIDI)
+{ }
 
 // doesn't know about ticks, just about notes and how long they are
 void PerformMonophonic::service() {

@@ -17,19 +17,20 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 #define PIN_SEED A4
 
 // REGISTER PLUGINS
-#include "PerformModule.hpp"
 #include "PerformMonophonic.hpp"
+#include "PerformMultitimbral.hpp"
 #include "PerformPolyphonic.hpp"
+//#include "PerformArp.hpp"
 
 #define NUM_PERFORMERS 1
-PerformModule *performers[] {
-	new PerformPolyphonic(MIDI)
+IPerformer *performers[] {
+	new PerformPolyphonic<4>(MIDI)
 };
 
 
 // Instantiate other modules
 static ComposeModule *compose;
-static PerformModule* perform;
+static IPerformer* perform;
 static SerialConsole console;
 static MidiClock& mainclock = MidiClock::instance();
 

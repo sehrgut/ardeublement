@@ -7,21 +7,34 @@
 #include "ComposeModule.hpp"
 #include "MidiClock.hpp"
 #include "Params.hpp"
+#include "IPerformer.hpp"
 
 #define CH_OUT 1 //todo: channel(s) set up by main
-#define NUM_VOICES 3 // todo: multiple composers
+
+/* todo: is this useful to template?
+ * Since, it's mostly dependent on how much work is being done and the potential lagtime
+ */
 #define QUEUE_LEN 4
 
 // todo: https://github.com/FortySevenEffects/arduino_midi_library/issues/162
 typedef midi::MidiInterface<midi::SerialMIDI<HardwareSerial>> MidiInterface;
+
+/*
+// todo: if these would be useful, put them in another file and extern them here
+
+char* clock_divisions_names[6] ={"1/1","1/2","1/4","1/8","1/16","1/32"};
+int divRatio[6] = {96,48,24,12,6,3};//note multipliers
+char* actionModeNames[2] = {"Rest","Note"};
+
+*/
 
 enum ClockDivisions {
   WHOLE         = 24 * 4,
   HALF          = 24 * 2,
   QUARTER       = 24,
   EIGHTH        = 24 / 2,
-  SIXTEENTH     = 24/4,
-  THIRTYSECOND  = 24/8,
+  SIXTEENTH     = 24 / 4,
+  THIRTYSECOND  = 24 / 8,
 };
 
 typedef enum {
@@ -36,18 +49,6 @@ typedef struct {
   int       dur;  
 } VoiceAction;
 
-typedef CircularBuffer<VoiceAction, QUEUE_LEN> ActionQueue;
-
-// todo: separation between "voice" and "part"
-//       - a Part gets 1 composer, 1 rhythm, and n voices
-//       - a Voice gets 1 channel
-//       - AbstractPerformer should only care about voice scheduling.
-
-/*
-  - class MonophonicPerformer(RhythmModule r, ComposeModule c)
-  - class PolyphonicPerformer(RhythmModule r, ComposeModule c, int voices)
-  - class MultitimbralPerformer(RhythmModule[] rr, ComposeModule cc[], int voices)
-*/
 typedef struct {
   byte        chan;
   VoiceAction action;
@@ -55,20 +56,24 @@ typedef struct {
   midiclock_ticks_t expires;
 } Voice;
 
-class PerformModule : public MidiClockWatcher {
-  private:
-    midiclock_ticks_t ticks;
-    MidiInterface& MIDI;
 
-    volatile Voice voices[NUM_VOICES];
+typedef CircularBuffer<VoiceAction, QUEUE_LEN> ActionQueue;
+
+template <size_t VOICE_COUNT>
+class PerformModule : public IPerformer {
+  private:
+    midiclock_ticks_t	ticks;
+    MidiInterface&		MIDI;
+    volatile Voice		voices[VOICE_COUNT];
+
     void sendVoices();
 
   protected:
     ComposeModule* compose;
-    volatile ActionQueue actions[NUM_VOICES];
+    volatile ActionQueue actions[VOICE_COUNT];
 
   public:
-    PerformModule(MidiInterface& midi_interface);
+    PerformModule(MidiInterface& MIDI);
     virtual void service() = 0;
 
   //Module
@@ -79,5 +84,7 @@ class PerformModule : public MidiClockWatcher {
     void tick(midiclock_ticks_t ticks);
     void stop();
 };
+
+#include "PerformModule-impl.hpp"
 
 #endif
