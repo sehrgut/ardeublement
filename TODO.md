@@ -26,6 +26,11 @@
 - Doxygen
 - Instead of the current nested model, what if modules were chained. Then, for instance, a module that produces a composition could feed a module that arpeggiates in some way based on that composition.
 - replace all `byte` with `uint8_t` bc actually Arduino.h's "friendly" things are terrible.
+- PerformPolyphonic creates too busy of lines. It should use its polyphony to allow holds and chords, not just to play four overlapping melodies.
+
+## Features Requiring Additional Hardware
+- Auto-reset, in case of hang
+  - Some kinds of "hang"-like behaviour could be under interrupt monitor, such as an interrupt that sets a "ms since a note was processed" global, which is updated when sending MIDI notes.
 
 ### RNG
 - Tune RNG scaling for uniformity, qv https://lemire.me/blog/2017/02/28/how-many-floating-point-numbers-are-in-the-interval-01/

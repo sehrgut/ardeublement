@@ -2,9 +2,15 @@
 #include <TimerThree.h>
 #include "Params.hpp"
 #include "Logger.hpp"
-#include "SerialConsole.hpp"
 #include "MidiClock.hpp"
 #include "Util.hpp"
+
+//#define DEBUG
+
+#ifdef DEBUG
+#include "SerialConsole.hpp"
+#endif
+
 
 // todo: everything is a Module subtype, and Module.set(Params) is how all globals get around
 // todo: rethink main architecture of composer/startcomposer/etc
@@ -31,7 +37,11 @@ IPerformer *performers[] {
 // Instantiate other modules
 static ComposeModule *compose;
 static IPerformer* perform;
+
+#ifdef DEBUG
 static SerialConsole console;
+#endif
+
 static MidiClock& mainclock = MidiClock::instance();
 
 /*  int     deviation; // todo: make double 0-1 % of range
@@ -130,10 +140,13 @@ void loop() {
 	Logger::log(LOGGER, "kickstart");
     first_run = false;
   }
-  Logger::log(LOGGER, "loop");
+//  Logger::log(LOGGER, "loop");
   update_params();
   digitalWrite(LED_BUILTIN, HIGH);
   perform->service();
   digitalWrite(LED_BUILTIN, LOW);
+
+#ifdef DEBUG
   console.process_commands();
+#endif
 }

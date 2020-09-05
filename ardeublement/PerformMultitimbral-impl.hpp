@@ -41,7 +41,7 @@ void PerformMultitimbral<VOICE_COUNT>::service() {
 			VoiceAction next = {
 			  mode: (rest ? VoiceMode::Rest : VoiceMode::Note),
 			  note: (rest ? 0 : this->compose->next()),
-			  vel:  r.bytes[2] / 2 + 128,
+			  vel:  r.bytes[2] / 4 + 64,
 			  dur:  rhythm[i][rcur[i]],
 			};
 
